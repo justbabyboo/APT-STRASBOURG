@@ -2,3 +2,15 @@
 [build]
   publish = "."
   command = ""
+
+# Anti-cache sur le HTML : le navigateur revalide à chaque visite,
+# donc les nouvelles modifs s'affichent sans avoir à vider le cache.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
