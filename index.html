@@ -140,7 +140,7 @@
 <section>
   <h2>Budget</h2>
   <div class="budget" id="budget">
-    <div class="kpi"><div class="label">Loyer max cible</div><div class="v" id="kpi-max">—</div></div>
+    <div class="kpi"><div class="label">Loyer max cible</div><div class="v" id="kpi-max">1 000 €</div></div>
     <div class="kpi"><div class="label">Revenus mensuels</div><div class="v" id="kpi-rev">—</div></div>
     <div class="kpi"><div class="label">Annonces actives</div><div class="v" id="kpi-act">0</div></div>
     <div class="kpi"><div class="label">Visites prévues</div><div class="v" id="kpi-vis">0</div></div>
@@ -205,6 +205,8 @@
 const LS_KEYS = { urlSuivi:'urlSuivi', urlBudget:'urlBudget', check:'checkPapiers', geo:'geoCache' };
 // URL CSV publiée du Sheet « Suivi annonces » — défaut pour fonctionner sans config sur tout appareil
 const DEFAULT_URL_SUIVI = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9hEb8kad0_6QzY5yqvm0n4gZKKUdLCtG0TNUrhUiGm_nRlFUMHMw2R3aqrdrxl-TFXXrzplfOjgXD/pub?output=csv';
+// Loyer max cible par défaut (€/mois) — affiché tant que le Sheet « Budget » n'est pas publié en CSV
+const DEFAULT_LOYER_MAX = 1000;
 const STORE = {
   get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
@@ -553,6 +555,8 @@ function bust(url){
 
 /* ============== Budget loader ============== */
 async function loadBudget(){
+  // Valeur par défaut tant qu'aucune donnée de budget n'est chargée
+  document.getElementById('kpi-max').textContent = fmtEur(DEFAULT_LOYER_MAX);
   const url = STORE.get(LS_KEYS.urlBudget);
   if(!url){ return; }
   try{
