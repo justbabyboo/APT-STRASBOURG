@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Appartement Strasbourg — Maxime &amp; Can</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#334155; --line:#475569;
+    --text:#f1f5f9; --muted:#94a3b8; --accent:#38bdf8; --accent2:#a78bfa;
+    --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --dpeA:#179c5b; --dpeB:#3aab47; --dpeC:#c6d62d; --dpeD:#f7d11e;
+    --dpeE:#f0911a; --dpeF:#e6481f; --dpeG:#cc0000;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+            line-height:1.45}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{display:flex;align-items:center;justify-content:space-between;
+         padding:14px 22px;background:#0b1220;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  header .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .btns{display:flex;gap:8px}
+  button{background:var(--panel);color:var(--text);border:1px solid var(--line);
+         padding:7px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+  button:hover{background:var(--panel2)}
+  button.primary{background:var(--accent);color:#0b1220;border-color:var(--accent);font-weight:600}
+  main{padding:18px 22px;max-width:1400px;margin:0 auto}
+  section{margin-bottom:26px}
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+     border-bottom:1px solid var(--line);padding-bottom:6px;margin:0 0 12px}
+  /* Budget */
+  .budget{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .kpi .label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  .kpi .v{font-size:22px;font-weight:600;margin-top:4px}
+  .kpi.alert{border-color:var(--warn)}
+  /* Map */
+  #map{height:380px;border-radius:12px;border:1px solid var(--line);overflow:hidden}
+  .map-legend{font-size:11px;color:var(--muted);margin-top:6px}
+  /* Cards grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+        display:flex;flex-direction:column;gap:8px;position:relative;transition:border-color .15s}
+  .card:hover{border-color:var(--accent)}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .card .src{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}
+  .card h3{margin:2px 0;font-size:15px;font-weight:600}
+  .card .addr{color:var(--muted);font-size:12px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+  .stat{background:#0b1220;border-radius:6px;padding:6px 8px}
+  .stat .l{font-size:10px;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:14px;font-weight:600}
+  .dpe-row{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
+  .dpe-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;
+             font-weight:700;font-size:12px;color:#000}
+  .dpe-A{background:var(--dpeA);color:#fff}
+  .dpe-B{background:var(--dpeB);color:#fff}
+  .dpe-C{background:var(--dpeC)}
+  .dpe-D{background:var(--dpeD)}
+  .dpe-E{background:var(--dpeE);color:#fff}
+  .dpe-F{background:var(--dpeF);color:#fff}
+  .dpe-G{background:var(--dpeG);color:#fff}
+  .dpe-NA{background:#475569;color:#cbd5e1}
+  .cost{font-size:12px;color:var(--muted)}
+  .cost b{color:var(--text)}
+  .status{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;
+          padding:3px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.05em}
+  .s-A_CONTACTER{background:#475569;color:#fff}
+  .s-CONTACTE{background:#3b82f6;color:#fff}
+  .s-VISITE_PROGRAMMEE{background:#a855f7;color:#fff}
+  .s-VISITE{background:#06b6d4;color:#fff}
+  .s-DOSSIER_ENVOYE{background:var(--warn);color:#0b1220}
+  .s-ACCEPTE{background:var(--ok);color:#0b1220}
+  .s-REFUSE,.s-LOUE,.s-NON_DISPONIBLE{background:var(--bad);color:#fff;opacity:.9}
+  .card .link{margin-top:4px;font-size:12px}
+  /* Agences */
+  .agency-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .agency{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:7px}
+  .agency.online{border-style:dashed;opacity:.9}
+  .agency .tag{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent2);font-weight:700}
+  .agency h3{margin:0;font-size:15px;font-weight:600}
+  .agency .addr{color:var(--muted);font-size:12px}
+  .agency .addr a{color:var(--accent)}
+  .agency .offers{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .agency .offers li{background:#0b1220;border-radius:6px;padding:6px 9px;font-size:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .agency .offers .o-title{line-height:1.3}
+  .agency .offers .meta{color:var(--muted)}
+  .agency .offers a{white-space:nowrap;font-weight:600}
+  /* Checklist */
+  .check{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .check label{display:flex;gap:7px;align-items:flex-start;font-size:13px;
+                background:var(--panel);border:1px solid var(--line);padding:7px 9px;border-radius:6px;cursor:pointer}
+  .check input{margin-top:2px}
+  .check label.done{opacity:.55;text-decoration:line-through}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:560px;width:90%}
+  .modal h3{margin:0 0 14px;font-size:16px}
+  .modal label{display:block;font-size:12px;color:var(--muted);margin-top:10px}
+  .modal input{width:100%;background:#0b1220;color:var(--text);border:1px solid var(--line);
+               padding:8px 10px;border-radius:6px;font-size:12px;margin-top:4px;font-family:monospace}
+  .modal .help{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5}
+  .modal .help code{background:#0b1220;padding:1px 4px;border-radius:3px;font-size:10px}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .empty{color:var(--muted);font-size:13px;font-style:italic;padding:14px;text-align:center}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+         background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:8px;
+         font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:300}
+  .toast.show{opacity:1}
+  /* Leaflet dark tweaks */
+  .leaflet-container{background:#1a2330}
+  .leaflet-popup-content-wrapper{background:var(--panel);color:var(--text);border-radius:8px}
+  .leaflet-popup-tip{background:var(--panel)}
+  .leaflet-popup-content{font-size:12px;line-height:1.4;margin:10px 12px}
+  .leaflet-popup-content h4{margin:0 0 4px;font-size:13px}
+  .leaflet-popup-content a{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🏠 Appartement Strasbourg — Maxime &amp; Can</h1>
+    <div class="sub">Source live : Google Sheets · <span id="lastSync">jamais synchronisé</span> · <span id="autoLabel">auto-refresh 10 min</span></div>
+  </div>
+  <div class="btns">
+    <button onclick="loadAll()" class="primary">↻ Synchroniser</button>
+    <button onclick="openSettings()">⚙ Réglages</button>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <h2>Budget</h2>
+  <div class="budget" id="budget">
+    <div class="kpi"><div class="label">Loyer max cible</div><div class="v" id="kpi-max">—</div></div>
+    <div class="kpi"><div class="label">Revenus mensuels</div><div class="v" id="kpi-rev">—</div></div>
+    <div class="kpi"><div class="label">Annonces actives</div><div class="v" id="kpi-act">0</div></div>
+    <div class="kpi"><div class="label">Visites prévues</div><div class="v" id="kpi-vis">0</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Carte des biens</h2>
+  <div id="map"></div>
+  <div class="map-legend">📍 Marqueurs géocodés via OpenStreetMap. Plus l'adresse dans le Sheet est précise, meilleur le placement. Cache local 30j.</div>
+</section>
+
+<section>
+  <h2>Annonces · <span id="listCount">0</span></h2>
+  <div class="grid" id="listings">
+    <div class="empty">Charge les annonces via ↻ Synchroniser (configure d'abord ⚙ Réglages avec l'URL CSV du Sheet).</div>
+  </div>
+</section>
+
+<section>
+  <h2>Agences à visiter · <span id="agencyCount">0</span></h2>
+  <div class="agency-list" id="agencies">
+    <div class="empty">Synchronise pour voir les agences et leurs adresses.</div>
+  </div>
+</section>
+
+<section>
+  <h2>Checklist papiers (loi ALUR)</h2>
+  <div class="check" id="check"></div>
+</section>
+
+</main>
+
+<!-- Modal réglages -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>⚙ Réglages — URLs CSV publiés</h3>
+    <label>URL CSV Sheet « Suivi annonces »
+      <input type="url" id="urlSuivi" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" />
+    </label>
+    <label>URL CSV Sheet « Budget »
+      <input type="url" id="urlBudget" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" />
+    </label>
+    <div class="help">
+      <b>Comment obtenir l'URL :</b><br>
+      Sheet Google → <code>Fichier</code> → <code>Partager</code> → <code>Publier sur le Web</code> →
+      onglet désiré, format <code>Valeurs séparées par des virgules (.csv)</code> → Publier → copier l'URL.
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeSettings()">Annuler</button>
+      <button class="primary" onclick="saveSettings()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* ============== Config & helpers ============== */
+const LS_KEYS = { urlSuivi:'urlSuivi', urlBudget:'urlBudget', check:'checkPapiers', geo:'geoCache' };
+// URL CSV publiée du Sheet « Suivi annonces » — défaut pour fonctionner sans config sur tout appareil
+const DEFAULT_URL_SUIVI = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9hEb8kad0_6QzY5yqvm0n4gZKKUdLCtG0TNUrhUiGm_nRlFUMHMw2R3aqrdrxl-TFXXrzplfOjgXD/pub?output=csv';
+const STORE = {
+  get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+};
+const toast = (msg, ms=2200)=>{
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tT); window._tT = setTimeout(()=>t.classList.remove('show'), ms);
+};
+
+/* ============== DPE → coût énergie ==============
+   Méthode :
+   - Si la valeur DPE contient un kWhEP/m²/an explicite, on l'utilise.
+   - Sinon on prend le midpoint de la classe.
+   - Coût annuel ≈ kWhEP × surface × (0.092 € min · 0.128 € max)
+     Calibré sur les estimations DPE 2026 (cf. Immo Chevreux : D=210, 68.8m² → 1360-1890€).
+*/
+const DPE_CLASS_MID = { A:50, B:90, C:145, D:215, E:290, F:375, G:460 };
+
+function parseDPE(raw){
+  if(!raw) return { letter:null, kwh:null };
+  const s = String(raw).toUpperCase().trim();
+  const letter = (s.match(/\b([A-G])\b/)||[])[1] || null;
+  const kwh = parseFloat((s.match(/(\d+(?:[.,]\d+)?)\s*KWH/)||[])[1]?.replace(',','.')) || null;
+  return { letter, kwh };
+}
+function energyCost(dpeRaw, surface){
+  if(!surface || surface<=0) return null;
+  const { letter, kwh } = parseDPE(dpeRaw);
+  const kwhVal = kwh || (letter ? DPE_CLASS_MID[letter] : null);
+  if(!kwhVal) return null;
+  const total = kwhVal * surface;
+  return {
+    letter,
+    annualMin: Math.round(total * 0.092),
+    annualMax: Math.round(total * 0.128),
+    monthlyMin: Math.round(total * 0.092 / 12),
+    monthlyMax: Math.round(total * 0.128 / 12),
+  };
+}
+
+/* ============== CSV parser (handles quotes, commas in fields) ============== */
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], n=text[i+1];
+    if(inQ){
+      if(c==='"' && n==='"'){ cur+='"'; i++; }
+      else if(c==='"'){ inQ=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') inQ=true;
+      else if(c===','){ row.push(cur); cur=''; }
+      else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else if(c==='\r'){}
+      else cur+=c;
+    }
+  }
+  if(cur||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.some(c=>c&&c.trim()));
+}
+
+/* ============== Header matching (resilient to label variations) ============== */
+const COL_PATTERNS = {
+  source:       /^source|agence$/i,
+  link:         /lien|url/i,
+  quartier:     /quartier|secteur/i,
+  adresse:      /adresse|address/i,
+  type:         /^type|t\d|pièces/i,
+  surface:      /surface|m[²2]/i,
+  etage:        /étage|etage|floor/i,
+  loyerHC:      /loyer\s*hc|hors\s*charges/i,
+  charges:      /^charges/i,
+  loyerCC:      /loyer\s*cc|charges?\s*comprises|total/i,
+  dpe:          /^dpe|dpe\s|énergie|energie/i,
+  agence:       /agence|bailleur/i,
+  contact:      /contact|nom/i,
+  tel:          /tel|email|mail|téléphone/i,
+  statut:       /statut|status/i,
+  visite:       /date\s*visite|visite/i,
+};
+function mapHeaders(headers){
+  const map = {};
+  headers.forEach((h,i)=>{
+    const cleaned = h.trim();
+    for(const [key,pat] of Object.entries(COL_PATTERNS)){
+      if(map[key]===undefined && pat.test(cleaned)) map[key] = i;
+    }
+  });
+  return map;
+}
+// Cherche la ligne d'en-tête : la première qui mappe au moins 3 colonnes connues
+function findHeaderRow(rows){
+  let best = { idx:0, map:{}, score:0 };
+  for(let i=0;i<Math.min(10,rows.length);i++){
+    const m = mapHeaders(rows[i]);
+    const s = Object.keys(m).length;
+    if(s > best.score) best = { idx:i, map:m, score:s };
+  }
+  return best;
+}
+
+/* ============== Status normalize ============== */
+function normStatus(s){
+  if(!s) return 'A_CONTACTER';
+  const u = s.toUpperCase().replace(/[ÉÈÊ]/g,'E').replace(/[ÀÂ]/g,'A')
+             .replace(/[^A-Z]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  if(/LOUE|NON.DISPO/.test(u)) return 'LOUE';
+  return u;
+}
+
+/* ============== Geocoding via Nominatim (cached) ============== */
+async function geocode(query){
+  const cache = STORE.get(LS_KEYS.geo) || {};
+  const key = query.toLowerCase().trim();
+  const cached = cache[key];
+  const now = Date.now();
+  if(cached && (now - cached.t) < 1000*60*60*24*30) return cached.coords;
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query + ', Strasbourg, France')}`,
+                         { headers:{'Accept':'application/json'} });
+    const data = await r.json();
+    if(data && data[0]){
+      const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      cache[key] = { t:now, coords };
+      STORE.set(LS_KEYS.geo, cache);
+      return coords;
+    }
+  }catch(e){ console.warn('geocode fail', query, e); }
+  return null;
+}
+// Fallback : quartier → coords approx Strasbourg
+const QUARTIER_COORDS = {
+  'neudorf':       [48.5681, 7.7559],
+  'krutenau':      [48.5763, 7.7567],
+  'gare':          [48.5851, 7.7338],
+  'centre':        [48.5820, 7.7478],
+  'orangerie':     [48.5901, 7.7720],
+  'esplanade':     [48.5793, 7.7689],
+  'meinau':        [48.5524, 7.7510],
+  'robertsau':     [48.6111, 7.7831],
+  'cronenbourg':   [48.6028, 7.7203],
+  'koenigshoffen': [48.5836, 7.7100],
+  'montagne verte':[48.5694, 7.7156],
+  'elsau':         [48.5681, 7.7167],
+  'hautepierre':   [48.6056, 7.7000],
+  'wacken':        [48.6014, 7.7669],
+  'bourse':        [48.5780, 7.7475],
+  'petite france': [48.5821, 7.7404],
+};
+function quartierCoords(q){
+  if(!q) return null;
+  const k = q.toLowerCase().trim();
+  for(const [name,c] of Object.entries(QUARTIER_COORDS)){
+    if(k.includes(name)) return c;
+  }
+  return null;
+}
+
+/* ============== Seed data (fallback si CSV indispo) ============== */
+const SEED = [
+  { source:'Immoval Neudorf', link:'', quartier:'Neudorf', adresse:'Neudorf, Strasbourg',
+    type:'T3', surface:55, loyerHC:'', charges:'', loyerCC:882, dpe:'',
+    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'ASI67 Krutenau', link:'', quartier:'Krutenau', adresse:'Krutenau, Strasbourg',
+    type:'T3 rénové', surface:69, loyerHC:'', charges:'', loyerCC:977, dpe:'',
+    agence:'ASI67', contact:'', tel:'', statut:'A_CONTACTER', visite:'',
+    notes:'❤️ coup de cœur' },
+];
+
+/* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
+const AGENCIES = [
+  { match:/foncia/i,                       name:'Foncia — Location & Gestion',        address:'27 avenue du Rhin, 67100 Strasbourg',            tel:'',             online:false },
+  { match:/immoval/i,                      name:'Immoval',                            address:'22 avenue de la Paix, 67000 Strasbourg',         tel:'03 88 22 88 22', online:false },
+  { match:/lamy/i,                         name:'Lamy Strasbourg Kléber',             address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg',    tel:'',             online:false },
+  { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'',             online:false, note:'Succursale : 77 rue Boecklin (Robertsau)' },
+  { match:/123\s*loger/i,                  name:'123 Loger',   address:'', tel:'', online:true,  note:'Plateforme en ligne (entre particuliers) — pas d’agence à visiter · bonjour@123loger.com' },
+  { match:/locservice/i,                   name:'LocService',  address:'', tel:'', online:true,  note:'Plateforme en ligne (de particulier à particulier) — pas d’agence à visiter · locservice.fr' },
+  { match:/leboncoin|bon\s*coin/i,         name:'LeBonCoin',   address:'', tel:'', online:true,  note:'Annonces de particuliers — pas d’agence à visiter' },
+];
+function detectAgency(it){
+  const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
+  for(const a of AGENCIES){ if(a.match.test(hay)) return a; }
+  const label = (it.source||it.agence||'Autre').trim();
+  return { name:label, address:'', tel:'', online:false, note:'Adresse à compléter', _fallback:true };
+}
+function renderAgencies(items){
+  const cont = document.getElementById('agencies');
+  if(!cont) return;
+  const groups = new Map();
+  for(const it of (items||[])){
+    const a = detectAgency(it);
+    if(!groups.has(a.name)) groups.set(a.name, { info:a, offers:[] });
+    groups.get(a.name).offers.push(it);
+  }
+  const countEl = document.getElementById('agencyCount');
+  if(countEl) countEl.textContent = groups.size;
+  if(!groups.size){ cont.innerHTML = '<div class="empty">Aucune agence pour l’instant.</div>'; return; }
+  const rank = g => g.info.online?2:(g.info._fallback?1:0);
+  const arr = [...groups.values()].sort((x,y)=> rank(x)-rank(y) || y.offers.length-x.offers.length);
+  cont.innerHTML = '';
+  for(const g of arr){
+    const a = g.info;
+    let addrHtml;
+    if(a.online){
+      addrHtml = `<div class="addr">🌐 ${esc(a.note||'En ligne')}</div>`;
+    } else if(a.address){
+      const mapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.address + ', France');
+      addrHtml = `<div class="addr">📍 ${esc(a.address)}</div>`
+               + (a.tel ? `<div class="addr">☎ ${esc(a.tel)}</div>` : '')
+               + (a.note ? `<div class="addr">${esc(a.note)}</div>` : '')
+               + `<div class="addr"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire Google Maps ↗</a></div>`;
+    } else {
+      addrHtml = `<div class="addr">📍 ${esc(a.note||'Adresse à compléter')}</div>`;
+    }
+    const offersHtml = g.offers.map(it=>{
+      const meta = `${fmtEur(it.loyerCC||it.loyerHC)}${it.surface?` · ${it.surface} m²`:''}`;
+      const title = `${esc(it.type||'?')} · ${esc(it.quartier||'')}`;
+      const link = it.link
+        ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">Voir ↗</a>`
+        : `<span class="meta">pas de lien</span>`;
+      return `<li><span class="o-title">${title}<br><span class="meta">${meta}</span></span>${link}</li>`;
+    }).join('');
+    const div = document.createElement('div');
+    div.className = 'agency' + (a.online?' online':'');
+    div.innerHTML = `
+      <div class="tag">${a.online ? '🌐 En ligne' : '🏢 Agence · '+g.offers.length+' annonce'+(g.offers.length>1?'s':'')}</div>
+      <h3>${esc(a.name)}</h3>
+      ${addrHtml}
+      <ul class="offers">${offersHtml}</ul>
+    `;
+    cont.appendChild(div);
+  }
+}
+
+/* ============== Rendering ============== */
+let MAP, MARKERS_LAYER;
+function initMap(){
+  if(MAP) return;
+  MAP = L.map('map').setView([48.5826, 7.7521], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap', maxZoom:19
+  }).addTo(MAP);
+  MARKERS_LAYER = L.layerGroup().addTo(MAP);
+}
+
+async function renderListings(items){
+  document.getElementById('listCount').textContent = items.length;
+  renderAgencies(items);
+  const grid = document.getElementById('listings');
+  if(!items.length){
+    grid.innerHTML = '<div class="empty">Aucune annonce. Configure ⚙ et clique ↻.</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  let countActive=0, countVisits=0;
+  for(const it of items){
+    const cost = energyCost(it.dpe, parseFloat(it.surface));
+    const dpeInfo = parseDPE(it.dpe);
+    const dpeClass = dpeInfo.letter ? 'dpe-'+dpeInfo.letter : 'dpe-NA';
+    const dpeText = dpeInfo.letter ? `DPE ${dpeInfo.letter}` + (dpeInfo.kwh?` · ${dpeInfo.kwh} kWhEP/m²`:''):
+                    'DPE non communiqué';
+    const status = normStatus(it.statut);
+    if(!['LOUE','REFUSE','NON_DISPONIBLE'].includes(status)) countActive++;
+    if(status==='VISITE_PROGRAMMEE') countVisits++;
+    const costHtml = cost
+      ? `<div class="cost">💡 Énergie estimée : <b>${cost.monthlyMin}-${cost.monthlyMax} €/mois</b> (≈ ${cost.annualMin}-${cost.annualMax} €/an)</div>`
+      : `<div class="cost">💡 Coût énergie : indisponible (DPE ou surface manquant)</div>`;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <span class="status s-${status}">${status.replace(/_/g,' ')}</span>
+      <div class="top">
+        <div>
+          <div class="src">${esc(it.source||it.agence||'')}</div>
+          <h3>${esc(it.type||'?')} — ${esc(it.quartier||'?')}</h3>
+          <div class="addr">📍 ${esc(it.adresse||it.quartier||'Adresse à préciser')}</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="l">Loyer CC</div><div class="v">${fmtEur(it.loyerCC||it.loyerHC)}</div></div>
+        <div class="stat"><div class="l">Surface</div><div class="v">${it.surface?it.surface+' m²':'—'}</div></div>
+        <div class="stat"><div class="l">€/m²</div><div class="v">${eurPerM2(it)}</div></div>
+      </div>
+      <div class="dpe-row">
+        <span class="dpe-badge ${dpeClass}">${dpeText}</span>
+      </div>
+      ${costHtml}
+      ${it.notes?`<div class="cost">📝 ${esc(it.notes)}</div>`:''}
+      ${it.link?`<div class="link"><a href="${esc(it.link)}" target="_blank" rel="noopener">Voir l'annonce ↗</a></div>`:''}
+      ${(it.contact||it.tel)?`<div class="cost">☎ ${esc(it.contact||'')} ${it.tel?'· '+esc(it.tel):''}</div>`:''}
+      ${it.visite?`<div class="cost">📅 ${esc(it.visite)}</div>`:''}
+    `;
+    grid.appendChild(card);
+  }
+  document.getElementById('kpi-act').textContent = countActive;
+  document.getElementById('kpi-vis').textContent = countVisits;
+  // Map
+  initMap();
+  MARKERS_LAYER.clearLayers();
+  let pts = [];
+  for(const it of items){
+    let coords = null;
+    if(it.adresse && !/^\s*$/.test(it.adresse)){
+      coords = await geocode(it.adresse);
+    }
+    if(!coords) coords = quartierCoords(it.quartier);
+    if(!coords) continue;
+    pts.push(coords);
+    const cost = energyCost(it.dpe, parseFloat(it.surface));
+    const popup = `
+      <h4>${esc(it.type||'?')} — ${esc(it.quartier||'')}</h4>
+      <div><b>${fmtEur(it.loyerCC||it.loyerHC)}</b> · ${it.surface||'?'} m²</div>
+      <div style="margin-top:4px">${esc(it.source||it.agence||'')}</div>
+      ${cost?`<div style="margin-top:4px">💡 ${cost.monthlyMin}-${cost.monthlyMax} €/mois énergie</div>`:''}
+      ${it.link?`<div style="margin-top:6px"><a href="${esc(it.link)}" target="_blank">Voir l'annonce ↗</a></div>`:''}
+    `;
+    L.marker(coords).addTo(MARKERS_LAYER).bindPopup(popup);
+  }
+  if(pts.length){
+    const b = L.latLngBounds(pts);
+    MAP.fitBounds(b, { padding:[40,40], maxZoom:14 });
+  }
+}
+
+function fmtEur(v){
+  const n = parseFloat(String(v||'').replace(/[^\d.,]/g,'').replace(',','.'));
+  return isNaN(n) ? '—' : Math.round(n).toLocaleString('fr-FR')+' €';
+}
+function eurPerM2(it){
+  const loy = parseFloat(String(it.loyerCC||it.loyerHC||'').replace(/[^\d.,]/g,'').replace(',','.'));
+  const s = parseFloat(it.surface);
+  if(!loy || !s) return '—';
+  return (loy/s).toFixed(1)+' €';
+}
+function esc(s){
+  return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+/* ============== Cache buster ============== */
+function bust(url){
+  if(!url) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return url + sep + 't=' + Date.now();
+}
+
+/* ============== Budget loader ============== */
+async function loadBudget(){
+  const url = STORE.get(LS_KEYS.urlBudget);
+  if(!url){ return; }
+  try{
+    const r = await fetch(bust(url), { cache:'no-store' }); const txt = await r.text();
+    const rows = parseCSV(txt);
+    let maxL=null, revT=null;
+    for(const row of rows){
+      const label = (row[0]||'').toUpperCase();
+      const v = (row[3]||row[2]||row[1]||'').toString().replace(/[^\d.,-]/g,'').replace(',','.');
+      const num = parseFloat(v);
+      if(isNaN(num)) continue;
+      if(/LOYER\s*(MAX|CONFORT|CIBLE|SOUHAIT)/.test(label)) maxL = num;
+      if(/TOTAL\s*REVENUS|REVENUS\s*TOTAL/.test(label)) revT = num;
+    }
+    if(maxL!=null) document.getElementById('kpi-max').textContent = fmtEur(maxL);
+    if(revT!=null) document.getElementById('kpi-rev').textContent = fmtEur(revT);
+  }catch(e){ console.warn('Budget load fail', e); }
+}
+
+/* ============== Listings loader ============== */
+async function loadListings(){
+  const url = STORE.get(LS_KEYS.urlSuivi) || DEFAULT_URL_SUIVI;
+  if(!url){
+    await renderListings(SEED);
+    toast('Sheet non configuré : affichage des annonces seed.');
+    return;
+  }
+  try{
+    const r = await fetch(bust(url), { cache:'no-store' }); const txt = await r.text();
+    const rows = parseCSV(txt);
+    if(rows.length < 2){ await renderListings(SEED); return; }
+    const { idx:headerIdx, map, score } = findHeaderRow(rows);
+    console.log('[dashboard] Header row index:', headerIdx);
+    console.log('[dashboard] Headers detected:', rows[headerIdx]);
+    console.log('[dashboard] Columns mapped:', map, '(score:', score, ')');
+    if(score < 3){
+      console.warn('[dashboard] ⚠️ Moins de 3 colonnes reconnues. Vérifie les noms d\'en-têtes du Sheet.');
+      toast('⚠️ En-têtes du Sheet non reconnus. Ouvre la console (F12) pour le diag.');
+      await renderListings(SEED); return;
+    }
+    const items = [];
+    for(let i=headerIdx+1;i<rows.length;i++){
+      const row = rows[i];
+      // Stop si on tombe sur une section "COMPARATIF" / "TOP" / "CRITÈRE" en colonne A (Sheet template à plusieurs sections)
+      const firstCell = (row[0]||'').toString().toUpperCase();
+      if(/COMPARATIF|^CRITERE|^CRITÈRE|^TOP\s|^DECISION|^DÉCISION/.test(firstCell)){
+        console.log('[dashboard] Stop parsing à la ligne', i, '(section spéciale détectée):', firstCell);
+        break;
+      }
+      const get = key => map[key]!==undefined ? (row[map[key]]||'').trim() : '';
+      // Skip les lignes-template : on exige au moins une vraie donnée (loyer / surface / adresse / lien valide).
+      const hasReal = ['loyerHC','loyerCC','surface','adresse','link'].some(k=>{
+        const v = get(k);
+        if(!v) return false;
+        // Loyer/surface > 0
+        if(['loyerHC','loyerCC','surface'].includes(k)){
+          const n = parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.'));
+          return !isNaN(n) && n > 0;
+        }
+        // Lien = vraie URL
+        if(k==='link') return /^https?:\/\//i.test(v);
+        // Adresse : au moins 3 chars
+        return v.length > 2;
+      });
+      if(!hasReal) continue;
+      items.push({
+        source:get('source'), link:get('link'), quartier:get('quartier'),
+        adresse:get('adresse'), type:get('type'), surface:parseFloat(get('surface'))||get('surface'),
+        etage:get('etage'), loyerHC:get('loyerHC'), charges:get('charges'),
+        loyerCC:get('loyerCC')||get('loyerHC'), dpe:get('dpe'),
+        agence:get('agence'), contact:get('contact'), tel:get('tel'),
+        statut:get('statut'), visite:get('visite')
+      });
+    }
+    console.log('[dashboard]', items.length, 'annonces valides extraites.');
+    await renderListings(items.length?items:SEED);
+  }catch(e){
+    console.warn('Listings load fail', e);
+    await renderListings(SEED);
+    toast('Erreur chargement Sheet. Affichage seed.');
+  }
+}
+
+/* ============== Sync all ============== */
+async function loadAll(){
+  toast('Synchronisation…', 1500);
+  await Promise.all([loadBudget(), loadListings()]);
+  document.getElementById('lastSync').textContent = 'sync ' + new Date().toLocaleTimeString('fr-FR');
+}
+
+/* ============== Modal réglages ============== */
+function openSettings(){
+  document.getElementById('urlSuivi').value = STORE.get(LS_KEYS.urlSuivi) || '';
+  document.getElementById('urlBudget').value = STORE.get(LS_KEYS.urlBudget) || '';
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeSettings(){ document.getElementById('modalBg').classList.remove('open'); }
+function saveSettings(){
+  STORE.set(LS_KEYS.urlSuivi, document.getElementById('urlSuivi').value.trim()||null);
+  STORE.set(LS_KEYS.urlBudget, document.getElementById('urlBudget').value.trim()||null);
+  closeSettings();
+  loadAll();
+  toast('Réglages enregistrés.');
+}
+document.getElementById('modalBg').addEventListener('click', e=>{
+  if(e.target.id==='modalBg') closeSettings();
+});
+
+/* ============== Checklist papiers ============== */
+const PAPIERS = [
+  "Pièce d'identité (carte / passeport)",
+  "3 derniers bulletins de salaire (Maxime)",
+  "3 derniers bulletins de salaire (Can)",
+  "Contrat de travail / attestation employeur (Maxime)",
+  "Contrat de travail / attestation employeur (Can)",
+  "Avis d'imposition N-1 (Maxime)",
+  "Avis d'imposition N-1 (Can)",
+  "3 dernières quittances de loyer ou hébergement",
+  "RIB (Maxime)",
+  "RIB (Can)",
+  "Justificatif de domicile actuel",
+  "Garant : pièce d'identité",
+  "Garant : 3 derniers bulletins",
+  "Garant : avis d'imposition",
+  "Garant : justificatif domicile",
+];
+function renderChecklist(){
+  const state = STORE.get(LS_KEYS.check) || {};
+  const div = document.getElementById('check');
+  div.innerHTML = '';
+  PAPIERS.forEach((p,i)=>{
+    const id = 'p_'+i, done = !!state[i];
+    const lab = document.createElement('label');
+    lab.className = done?'done':'';
+    lab.innerHTML = `<input type="checkbox" ${done?'checked':''} data-i="${i}"> <span>${esc(p)}</span>`;
+    lab.querySelector('input').addEventListener('change', e=>{
+      state[i] = e.target.checked;
+      STORE.set(LS_KEYS.check, state);
+      lab.classList.toggle('done', e.target.checked);
+    });
+    div.appendChild(lab);
+  });
+}
+
+/* ============== Auto-refresh ============== */
+const AUTO_REFRESH_MS = 10 * 60 * 1000; // 10 minutes
+setInterval(()=>{
+  // Refresh seulement si onglet visible (économise les requêtes)
+  if(!document.hidden){
+    console.log('[auto-refresh]');
+    loadAll();
+  }
+}, AUTO_REFRESH_MS);
+// Refresh immédiat quand on revient sur l'onglet (après >1 min d'absence)
+let lastHide = Date.now();
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ lastHide = Date.now(); }
+  else if(Date.now() - lastHide > 60000){ loadAll(); }
+});
+
+/* ============== Boot ============== */
+renderChecklist();
+loadAll();
+</script>
+</body>
+</html>
