@@ -436,6 +436,12 @@ const AGENCIES = [
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
+// Agences supplémentaires affichées sur la carte même sans annonce associée
+// (ex. autres implantations Foncia à Strasbourg). Repères informatifs.
+const EXTRA_AGENCIES = [
+  { name:'Foncia Transaction Halles',  address:'8 Place des Halles, 67000 Strasbourg', tel:'', note:'Agence vente/transaction' },
+  { name:'Foncia Transaction Zurich',  address:'1 Place de Zurich, 67000 Strasbourg',  tel:'', note:'Agence vente/transaction' },
+];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
   for(const a of AGENCIES){ if(a.match.test(hay)) return a; }
@@ -537,6 +543,21 @@ async function renderAgencyMap(groups){
       <div>📍 ${esc(a.address)}</div>
       ${a.tel?`<div style="margin-top:2px">☎ ${esc(a.tel)}</div>`:''}
       <div style="margin-top:4px">${g.offers.length} annonce${g.offers.length>1?'s':''}</div>
+      <div style="margin-top:6px"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire ↗</a></div>
+    `;
+    L.marker(coords, { icon:AGENCY_ICON }).addTo(AGENCY_MARKERS).bindPopup(popup);
+  }
+  // Agences supplémentaires (autres implantations Foncia, etc.) — repères informatifs
+  for(const a of EXTRA_AGENCIES){
+    const coords = await geocode(a.address);
+    if(!coords) continue;
+    pts.push(coords);
+    const mapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.address + ', France');
+    const popup = `
+      <h4>${esc(a.name)}</h4>
+      <div>📍 ${esc(a.address)}</div>
+      ${a.tel?`<div style="margin-top:2px">☎ ${esc(a.tel)}</div>`:''}
+      ${a.note?`<div style="margin-top:4px">${esc(a.note)}</div>`:''}
       <div style="margin-top:6px"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire ↗</a></div>
     `;
     L.marker(coords, { icon:AGENCY_ICON }).addTo(AGENCY_MARKERS).bindPopup(popup);
