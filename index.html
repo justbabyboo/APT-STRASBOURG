@@ -429,10 +429,9 @@ const AGENCIES = [
   { match:/immoval/i,                      name:'Immoval',                            address:'22 avenue de la Paix, 67000 Strasbourg',         tel:'03 88 22 88 22', online:false },
   { match:/lamy/i,                         name:'Lamy Strasbourg Kléber',             address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg',    tel:'',             online:false },
   { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'',             online:false, note:'Succursale : 77 rue Boecklin (Robertsau)' },
-  { match:/123\s*loger/i,                  name:'123 Loger',   address:'', tel:'', online:true,  note:'Plateforme en ligne (entre particuliers) — pas d’agence à visiter · bonjour@123loger.com' },
-  { match:/locservice/i,                   name:'LocService',  address:'', tel:'', online:true,  note:'Plateforme en ligne (de particulier à particulier) — pas d’agence à visiter · locservice.fr' },
-  { match:/leboncoin|bon\s*coin/i,         name:'LeBonCoin',   address:'', tel:'', online:true,  note:'Annonces de particuliers — pas d’agence à visiter' },
 ];
+// Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
+const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
   for(const a of AGENCIES){ if(a.match.test(hay)) return a; }
@@ -444,6 +443,8 @@ function renderAgencies(items){
   if(!cont) return;
   const groups = new Map();
   for(const it of (items||[])){
+    // Ignore les plateformes en ligne (pas d'agence à visiter à Strasbourg)
+    if(EXCLUDE_FROM_AGENCIES.test(((it.source||'')+' '+(it.agence||'')))) continue;
     const a = detectAgency(it);
     if(!groups.has(a.name)) groups.set(a.name, { info:a, offers:[] });
     groups.get(a.name).offers.push(it);
