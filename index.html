@@ -429,18 +429,24 @@ const LISTINGS = [
 
 /* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
 const AGENCIES = [
-  { match:/foncia/i,                       name:'Foncia — Location & Gestion',        address:'27 avenue du Rhin, 67100 Strasbourg',            tel:'',             online:false },
-  { match:/immoval/i,                      name:'Immoval',                            address:'26B avenue de la Paix-Simone Veil, 67000 Strasbourg', tel:'03 88 22 88 22', online:false },
-  { match:/lamy/i,                         name:'Lamy Strasbourg Kléber',             address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg',    tel:'',             online:false },
-  { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'',             online:false, note:'Succursale : 77 rue Boecklin (Robertsau)' },
+  { match:/foncia/i, name:'Foncia — Location & Gestion', address:'27 avenue du Rhin, 67100 Strasbourg', tel:'03 88 15 08 08', online:false,
+    hours:['Lun–Jeu : 9h–12h30 · 13h30–18h','Ven : 9h–12h30 · 13h30–17h','Sam–Dim : fermé'] },
+  { match:/immoval/i, name:'Immoval', address:'26B avenue de la Paix-Simone Veil, 67000 Strasbourg', tel:'03 88 22 88 22', online:false,
+    hours:['Lun–Ven : 9h–12h · 14h–18h','Sam : 9h–12h','Dim : fermé'] },
+  { match:/lamy/i, name:'Lamy Strasbourg Kléber', address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg', tel:'03 88 39 81 39', online:false,
+    hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'], note:'Enseigne Nexity — confirmer avant visite' },
+  { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'03 88 39 20 39', online:false,
+    hours:['Lun–Jeu : 8h30–12h · 14h–18h','Ven : 8h30–12h · 14h–17h','Sam–Dim : fermé'], note:'Succursale : 77 rue Boecklin (Robertsau)' },
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
 // Agences supplémentaires affichées sur la carte même sans annonce associée
 // (ex. autres implantations Foncia à Strasbourg). Repères informatifs.
 const EXTRA_AGENCIES = [
-  { name:'Foncia Transaction Halles',  address:'8 Place des Halles, 67000 Strasbourg', tel:'', note:'Agence vente/transaction' },
-  { name:'Foncia Transaction Zurich',  address:'1 Place de Zurich, 67000 Strasbourg',  tel:'', note:'Agence vente/transaction' },
+  { name:'Foncia Transaction Halles', address:'8 Place des Halles, 67000 Strasbourg', tel:'03 88 15 08 15', note:'Agence vente/transaction',
+    hours:['Lun–Ven : 9h–12h30 · 13h30–18h30','Sam : 10h–17h','Dim : fermé'] },
+  { name:'Foncia Transaction Zurich', address:'1 Place de Zurich, 67000 Strasbourg', tel:'', note:'Agence vente/transaction',
+    hours:['Lun–Ven : 9h–12h30 · 13h30–18h30','Sam : 10h–17h','Dim : fermé'] },
 ];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
@@ -475,6 +481,7 @@ function renderAgencies(items){
       const mapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.address + ', France');
       addrHtml = `<div class="addr">📍 ${esc(a.address)}</div>`
                + (a.tel ? `<div class="addr">☎ ${esc(a.tel)}</div>` : '')
+               + (a.hours && a.hours.length ? `<div class="addr">🕓 ${a.hours.map(esc).join('<br>')}</div>` : '')
                + (a.note ? `<div class="addr">${esc(a.note)}</div>` : '')
                + `<div class="addr"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire Google Maps ↗</a></div>`;
     } else {
@@ -542,6 +549,8 @@ async function renderAgencyMap(groups){
       <h4>${esc(a.name)}</h4>
       <div>📍 ${esc(a.address)}</div>
       ${a.tel?`<div style="margin-top:2px">☎ ${esc(a.tel)}</div>`:''}
+      ${a.hours&&a.hours.length?`<div style="margin-top:4px">🕓 ${a.hours.map(esc).join('<br>')}</div>`:''}
+      ${a.note?`<div style="margin-top:4px">${esc(a.note)}</div>`:''}
       <div style="margin-top:4px">${g.offers.length} annonce${g.offers.length>1?'s':''}</div>
       <div style="margin-top:6px"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire ↗</a></div>
     `;
@@ -557,6 +566,7 @@ async function renderAgencyMap(groups){
       <h4>${esc(a.name)}</h4>
       <div>📍 ${esc(a.address)}</div>
       ${a.tel?`<div style="margin-top:2px">☎ ${esc(a.tel)}</div>`:''}
+      ${a.hours&&a.hours.length?`<div style="margin-top:4px">🕓 ${a.hours.map(esc).join('<br>')}</div>`:''}
       ${a.note?`<div style="margin-top:4px">${esc(a.note)}</div>`:''}
       <div style="margin-top:6px"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire ↗</a></div>
     `;
