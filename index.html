@@ -41,7 +41,9 @@
   .kpi.alert{border-color:var(--warn)}
   /* Map */
   #map{height:380px;border-radius:12px;border:1px solid var(--line);overflow:hidden}
-  .map-legend{font-size:11px;color:var(--muted);margin-top:6px}
+  #agencyMap{height:320px;border-radius:12px;border:1px solid var(--line);overflow:hidden}
+  .map-legend{font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:12px}
+  .agency-pin{background:none;border:none}
   /* Cards grid */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
@@ -161,6 +163,8 @@
 
 <section>
   <h2>Agences à visiter · <span id="agencyCount">0</span></h2>
+  <div id="agencyMap"></div>
+  <div class="map-legend">🏢 Agences physiques à Strasbourg. Clique un repère pour l'adresse et l'itinéraire.</div>
   <div class="agency-list" id="agencies">
     <div class="empty">Synchronise pour voir les agences et leurs adresses.</div>
   </div>
@@ -454,6 +458,7 @@ function renderAgencies(items){
   if(!groups.size){ cont.innerHTML = '<div class="empty">Aucune agence pour l’instant.</div>'; return; }
   const rank = g => g.info.online?2:(g.info._fallback?1:0);
   const arr = [...groups.values()].sort((x,y)=> rank(x)-rank(y) || y.offers.length-x.offers.length);
+  renderAgencyMap(arr);
   cont.innerHTML = '';
   for(const g of arr){
     const a = g.info;
@@ -498,6 +503,48 @@ function initMap(){
     attribution:'© OpenStreetMap', maxZoom:19
   }).addTo(MAP);
   MARKERS_LAYER = L.layerGroup().addTo(MAP);
+}
+
+/* ============== Carte des agences ============== */
+let AGENCY_MAP, AGENCY_MARKERS;
+const AGENCY_ICON = L.divIcon({
+  className:'agency-pin',
+  html:'<div style="width:18px;height:18px;background:#a78bfa;border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 0 4px rgba(0,0,0,.5)"></div>',
+  iconSize:[18,18], iconAnchor:[9,18], popupAnchor:[0,-16]
+});
+function initAgencyMap(){
+  if(AGENCY_MAP) return;
+  AGENCY_MAP = L.map('agencyMap').setView([48.5826, 7.7521], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap', maxZoom:19
+  }).addTo(AGENCY_MAP);
+  AGENCY_MARKERS = L.layerGroup().addTo(AGENCY_MAP);
+}
+async function renderAgencyMap(groups){
+  if(!document.getElementById('agencyMap')) return;
+  initAgencyMap();
+  AGENCY_MARKERS.clearLayers();
+  const pts = [];
+  for(const g of (groups||[])){
+    const a = g.info;
+    if(!a || !a.address) continue;            // que les agences physiques
+    const coords = await geocode(a.address);
+    if(!coords) continue;
+    pts.push(coords);
+    const mapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.address + ', France');
+    const popup = `
+      <h4>${esc(a.name)}</h4>
+      <div>📍 ${esc(a.address)}</div>
+      ${a.tel?`<div style="margin-top:2px">☎ ${esc(a.tel)}</div>`:''}
+      <div style="margin-top:4px">${g.offers.length} annonce${g.offers.length>1?'s':''}</div>
+      <div style="margin-top:6px"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire ↗</a></div>
+    `;
+    L.marker(coords, { icon:AGENCY_ICON }).addTo(AGENCY_MARKERS).bindPopup(popup);
+  }
+  if(pts.length){
+    AGENCY_MAP.fitBounds(L.latLngBounds(pts), { padding:[40,40], maxZoom:15 });
+  }
+  setTimeout(()=>AGENCY_MAP.invalidateSize(), 120);
 }
 
 async function renderListings(items){
