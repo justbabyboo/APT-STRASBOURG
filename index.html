@@ -127,11 +127,10 @@
 <header>
   <div>
     <h1>🏠 Appartement Strasbourg — Maxime &amp; Can</h1>
-    <div class="sub">Source live : Google Sheets · <span id="lastSync">jamais synchronisé</span> · <span id="autoLabel">auto-refresh 10 min</span></div>
+    <div class="sub">Données intégrées au site · <span id="lastSync">jamais synchronisé</span> · <span id="autoLabel">auto-refresh 10 min</span></div>
   </div>
   <div class="btns">
-    <button onclick="loadAll()" class="primary">↻ Synchroniser</button>
-    <button onclick="openSettings()">⚙ Réglages</button>
+    <button onclick="loadAll()" class="primary">↻ Rafraîchir</button>
   </div>
 </header>
 
@@ -150,13 +149,13 @@
 <section>
   <h2>Carte des biens</h2>
   <div id="map"></div>
-  <div class="map-legend">📍 Marqueurs géocodés via OpenStreetMap. Plus l'adresse dans le Sheet est précise, meilleur le placement. Cache local 30j.</div>
+  <div class="map-legend">📍 Marqueurs géocodés via OpenStreetMap. Plus l'adresse de l'annonce est précise, meilleur le placement. Cache local 30j.</div>
 </section>
 
 <section>
   <h2>Annonces · <span id="listCount">0</span></h2>
   <div class="grid" id="listings">
-    <div class="empty">Charge les annonces via ↻ Synchroniser (configure d'abord ⚙ Réglages avec l'URL CSV du Sheet).</div>
+    <div class="empty">Chargement des annonces…</div>
   </div>
 </section>
 
@@ -366,15 +365,62 @@ function quartierCoords(q){
   return null;
 }
 
-/* ============== Seed data (fallback si CSV indispo) ============== */
-const SEED = [
+/* ============== Annonces — données intégrées au site ==============
+   👉 Pour ajouter / modifier une annonce : éditer ce tableau (ou demander à Claude).
+   Statuts possibles : A_CONTACTER · CONTACTE · VISITE_PROGRAMMEE · VISITE ·
+   DOSSIER_ENVOYE · ACCEPTE · REFUSE · LOUE
+*/
+const LISTINGS = [
   { source:'Immoval Neudorf', link:'', quartier:'Neudorf', adresse:'Neudorf, Strasbourg',
-    type:'T3', surface:55, loyerHC:'', charges:'', loyerCC:882, dpe:'',
+    type:'T3', surface:55, etage:'', loyerHC:'', charges:'', loyerCC:882, dpe:'',
     agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'ASI67 Krutenau', link:'', quartier:'Krutenau', adresse:'Krutenau, Strasbourg',
-    type:'T3 rénové', surface:69, loyerHC:'', charges:'', loyerCC:977, dpe:'',
-    agence:'ASI67', contact:'', tel:'', statut:'A_CONTACTER', visite:'',
-    notes:'❤️ coup de cœur' },
+  { source:'ASI67', link:'', quartier:'Krutenau', adresse:'Krutenau, Strasbourg',
+    type:'T3 rénové', surface:69, etage:'', loyerHC:'', charges:'', loyerCC:977, dpe:'',
+    agence:'ASI67', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Immoval', link:'https://www.immoval.com/annonces-immobilieres/strasbourg/neudorf-3p-55-25m%c2%b2-g64076/',
+    quartier:'Neudorf', adresse:'rue du Chemin Bleu', type:'T3', surface:55.25, etage:'1er (sans ascenseur)',
+    loyerHC:'', charges:'', loyerCC:'', dpe:'D - 206 kWhEP/m².an',
+    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'LeBonCoin (particulier)', link:'https://www.leboncoin.fr/ad/locations/3188986832',
+    quartier:'Centre', adresse:'Avenue des Vosges', type:'T3', surface:47, etage:'5/? (avec ascenseur)',
+    loyerHC:835, charges:110, loyerCC:835, dpe:'',
+    agence:'', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Foncia', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/270791729.htm',
+    quartier:'Neudorf Ouest Centre', adresse:'', type:'T3', surface:62.22, etage:'3ème (sans ascenseur)',
+    loyerHC:850, charges:75, loyerCC:925, dpe:'D',
+    agence:'Foncia Alsace Bourgogne Franche Comté (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Foncia', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/gare-centre/271022755.htm',
+    quartier:'Gare Centre', adresse:'', type:'T4', surface:84.06, etage:'1er (sans ascenseur)',
+    loyerHC:808, charges:105, loyerCC:913, dpe:'D',
+    agence:'Foncia Alsace Bourgogne Franche Comté (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Foncia', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/gare-centre/271259461.htm',
+    quartier:'Gare Centre', adresse:'9 rue Jean-Pierre Loutherbourg', type:'T4 duplex', surface:63.47, etage:'4ème (sans ascenseur)',
+    loyerHC:795, charges:110, loyerCC:905, dpe:'D',
+    agence:'Foncia Alsace Bourgogne Franche Comté (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Immoval', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/269581001.htm',
+    quartier:'Neudorf Ouest Centre', adresse:'rue Baldner', type:'T3', surface:67.38, etage:'1er (ascenseur)',
+    loyerHC:1018, charges:80, loyerCC:1098, dpe:'C',
+    agence:'IMMOVAL — 22 av. de la Paix, Strasbourg (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'123 Loger', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/272275997.htm',
+    quartier:'Esplanade / Facultés', adresse:'Boulevard d\'Anvers', type:'T3', surface:50, etage:'5ème (dernier, sans ascenseur)',
+    loyerHC:820, charges:155, loyerCC:975, dpe:'E',
+    agence:'123 Loger', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Rénové 2024' },
+  { source:'LocService', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-est-centre/269509925.htm',
+    quartier:'Neudorf Est Centre', adresse:'', type:'T3', surface:68, etage:'',
+    loyerHC:700, charges:130, loyerCC:830, dpe:'B',
+    agence:'LocService', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Lamy', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/270228523.htm',
+    quartier:'Neudorf Ouest Centre', adresse:'rue Saint-Erhard', type:'T3', surface:68.15, etage:'2ème/2 (dernier, ascenseur)',
+    loyerHC:735.75, charges:160, loyerCC:895.75, dpe:'D',
+    agence:'Lamy Strasbourg Kléber (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
+  { source:'Immoval', link:'https://www.immoval.com/annonces-immobilieres/strasbourg/neudorf/neudorf-3p-58-16m%c2%b2-g64490/',
+    quartier:'Neudorf', adresse:'rue de l\'Ancienne Digue', type:'T3', surface:58.16, etage:'',
+    loyerHC:'', charges:'', loyerCC:1030, dpe:'D',
+    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Réseau Oralia — garage sous-sol, dispo août' },
+  { source:'Immoval', link:'https://www.immoval.com/annonces-immobilieres/strasbourg/hautepierre-3-pieces-62-74m%c2%b2-g63608/',
+    quartier:'Hautepierre', adresse:'avenue Racine', type:'T3', surface:62.74, etage:'6ème (ascenseur)',
+    loyerHC:'', charges:'', loyerCC:945, dpe:'B',
+    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Réseau Oralia — balcon + parking, dispo mi-juillet' },
 ];
 
 /* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
@@ -576,68 +622,10 @@ async function loadBudget(){
   }catch(e){ console.warn('Budget load fail', e); }
 }
 
-/* ============== Listings loader ============== */
+/* ============== Listings loader (données intégrées au site) ============== */
 async function loadListings(){
-  const url = STORE.get(LS_KEYS.urlSuivi) || DEFAULT_URL_SUIVI;
-  if(!url){
-    await renderListings(SEED);
-    toast('Sheet non configuré : affichage des annonces seed.');
-    return;
-  }
-  try{
-    const r = await fetch(bust(url), { cache:'no-store' }); const txt = await r.text();
-    const rows = parseCSV(txt);
-    if(rows.length < 2){ await renderListings(SEED); return; }
-    const { idx:headerIdx, map, score } = findHeaderRow(rows);
-    console.log('[dashboard] Header row index:', headerIdx);
-    console.log('[dashboard] Headers detected:', rows[headerIdx]);
-    console.log('[dashboard] Columns mapped:', map, '(score:', score, ')');
-    if(score < 3){
-      console.warn('[dashboard] ⚠️ Moins de 3 colonnes reconnues. Vérifie les noms d\'en-têtes du Sheet.');
-      toast('⚠️ En-têtes du Sheet non reconnus. Ouvre la console (F12) pour le diag.');
-      await renderListings(SEED); return;
-    }
-    const items = [];
-    for(let i=headerIdx+1;i<rows.length;i++){
-      const row = rows[i];
-      // Stop si on tombe sur une section "COMPARATIF" / "TOP" / "CRITÈRE" en colonne A (Sheet template à plusieurs sections)
-      const firstCell = (row[0]||'').toString().toUpperCase();
-      if(/COMPARATIF|^CRITERE|^CRITÈRE|^TOP\s|^DECISION|^DÉCISION/.test(firstCell)){
-        console.log('[dashboard] Stop parsing à la ligne', i, '(section spéciale détectée):', firstCell);
-        break;
-      }
-      const get = key => map[key]!==undefined ? (row[map[key]]||'').trim() : '';
-      // Skip les lignes-template : on exige au moins une vraie donnée (loyer / surface / adresse / lien valide).
-      const hasReal = ['loyerHC','loyerCC','surface','adresse','link'].some(k=>{
-        const v = get(k);
-        if(!v) return false;
-        // Loyer/surface > 0
-        if(['loyerHC','loyerCC','surface'].includes(k)){
-          const n = parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.'));
-          return !isNaN(n) && n > 0;
-        }
-        // Lien = vraie URL
-        if(k==='link') return /^https?:\/\//i.test(v);
-        // Adresse : au moins 3 chars
-        return v.length > 2;
-      });
-      if(!hasReal) continue;
-      items.push({
-        source:get('source'), link:get('link'), quartier:get('quartier'),
-        adresse:get('adresse'), type:get('type'), surface:parseFloat(get('surface'))||get('surface'),
-        etage:get('etage'), loyerHC:get('loyerHC'), charges:get('charges'),
-        loyerCC:get('loyerCC')||get('loyerHC'), dpe:get('dpe'),
-        agence:get('agence'), contact:get('contact'), tel:get('tel'),
-        statut:get('statut'), visite:get('visite')
-      });
-    }
-    console.log('[dashboard]', items.length, 'annonces valides extraites.');
-    await renderListings(items.length?items:SEED);
-  }catch(e){
-    console.warn('Listings load fail', e);
-    await renderListings(SEED);
-    toast('Erreur chargement Sheet. Affichage seed.');
-  }
+  console.log('[dashboard]', LISTINGS.length, 'annonces intégrées affichées.');
+  await renderListings(LISTINGS);
 }
 
 /* ============== Sync all ============== */
