@@ -329,7 +329,11 @@ async function geocode(query){
   const now = Date.now();
   if(cached && (now - cached.t) < 1000*60*60*24*30) return cached.coords;
   try{
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query + ', Strasbourg, France')}`,
+    // Si l'adresse contient déjà un code postal (67xxx) ou « France », on ne force pas Strasbourg
+    // (utile pour les adresses en périphérie, ex. Illkirch-Graffenstaden 67400).
+    const hasContext = /\b67\d{3}\b/.test(query) || /france/i.test(query);
+    const q = hasContext ? query : (query + ', Strasbourg, France');
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
                          { headers:{'Accept':'application/json'} });
     const data = await r.json();
     if(data && data[0]){
@@ -425,6 +429,11 @@ const LISTINGS = [
     quartier:'Hautepierre', adresse:'avenue Racine', type:'T3', surface:62.74, etage:'6ème (ascenseur)',
     loyerHC:'', charges:'', loyerCC:945, dpe:'B',
     agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Réseau Oralia — balcon + parking, dispo mi-juillet' },
+  { source:'Orpi Residence 2000', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-sud-centre/269432625.htm',
+    quartier:'Neudorf Sud Centre', adresse:'rue Zellenberg', type:'T3', surface:66.5, etage:'3ème/4 (sans ascenseur)',
+    loyerHC:889, charges:55, loyerCC:944, dpe:'D',
+    agence:'Orpi — Résidence 2000 (Illkirch)', contact:'', tel:'03 88 67 39 85', statut:'A_CONTACTER', visite:'',
+    notes:'Rénové à neuf en 2024 · proche tram · cave · entrée séparée · chauffage élec. individuel · dépôt 889 €' },
 ];
 
 /* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
@@ -437,6 +446,8 @@ const AGENCIES = [
     hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'], note:'Enseigne Nexity — confirmer avant visite' },
   { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'03 88 39 20 39', online:false,
     hours:['Lun–Jeu : 8h30–12h · 14h–18h','Ven : 8h30–12h · 14h–17h','Sam–Dim : fermé'], note:'Succursale : 77 rue Boecklin (Robertsau)' },
+  { match:/orpi|r[ée]sidence\s*2000/i, name:'Orpi — Résidence 2000', address:'158B Route de Lyon, 67400 Illkirch-Graffenstaden', tel:'03 88 67 39 85', online:false,
+    hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'], note:'À Illkirch-Graffenstaden (sud de Strasbourg)' },
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
