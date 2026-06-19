@@ -379,36 +379,13 @@ function quartierCoords(q){
    DOSSIER_ENVOYE · ACCEPTE · REFUSE · LOUE
 */
 const LISTINGS = [
-  { source:'Immoval Neudorf', link:'', quartier:'Neudorf', adresse:'Neudorf, Strasbourg',
-    type:'T3', surface:55, etage:'', loyerHC:'', charges:'', loyerCC:882, dpe:'',
-    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
   { source:'ASI67', link:'', quartier:'Krutenau', adresse:'Krutenau, Strasbourg',
     type:'T3 rénové', surface:69, etage:'', loyerHC:'', charges:'', loyerCC:977, dpe:'',
     agence:'ASI67', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Immoval', link:'https://www.immoval.com/annonces-immobilieres/strasbourg/neudorf-3p-55-25m%c2%b2-g64076/',
-    quartier:'Neudorf', adresse:'rue du Chemin Bleu', type:'T3', surface:55.25, etage:'1er (sans ascenseur)',
-    loyerHC:'', charges:'', loyerCC:'', dpe:'D - 206 kWhEP/m².an',
-    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
   { source:'LeBonCoin (particulier)', link:'https://www.leboncoin.fr/ad/locations/3188986832',
     quartier:'Centre', adresse:'Avenue des Vosges', type:'T3', surface:47, etage:'5/? (avec ascenseur)',
     loyerHC:835, charges:110, loyerCC:835, dpe:'',
     agence:'', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Foncia', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/270791729.htm',
-    quartier:'Neudorf Ouest Centre', adresse:'', type:'T3', surface:62.22, etage:'3ème (sans ascenseur)',
-    loyerHC:850, charges:75, loyerCC:925, dpe:'D',
-    agence:'Foncia Alsace Bourgogne Franche Comté (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Foncia', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/gare-centre/271022755.htm',
-    quartier:'Gare Centre', adresse:'', type:'T4', surface:84.06, etage:'1er (sans ascenseur)',
-    loyerHC:808, charges:105, loyerCC:913, dpe:'D',
-    agence:'Foncia Alsace Bourgogne Franche Comté (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Foncia', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/gare-centre/271259461.htm',
-    quartier:'Gare Centre', adresse:'9 rue Jean-Pierre Loutherbourg', type:'T4 duplex', surface:63.47, etage:'4ème (sans ascenseur)',
-    loyerHC:795, charges:110, loyerCC:905, dpe:'D',
-    agence:'Foncia Alsace Bourgogne Franche Comté (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Immoval', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/269581001.htm',
-    quartier:'Neudorf Ouest Centre', adresse:'rue Baldner', type:'T3', surface:67.38, etage:'1er (ascenseur)',
-    loyerHC:1018, charges:80, loyerCC:1098, dpe:'C',
-    agence:'IMMOVAL — 22 av. de la Paix, Strasbourg (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
   { source:'123 Loger', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/272275997.htm',
     quartier:'Esplanade / Facultés', adresse:'Boulevard d\'Anvers', type:'T3', surface:50, etage:'5ème (dernier, sans ascenseur)',
     loyerHC:820, charges:155, loyerCC:975, dpe:'E',
@@ -421,14 +398,6 @@ const LISTINGS = [
     quartier:'Neudorf Ouest Centre', adresse:'rue Saint-Erhard', type:'T3', surface:68.15, etage:'2ème/2 (dernier, ascenseur)',
     loyerHC:735.75, charges:160, loyerCC:895.75, dpe:'D',
     agence:'Lamy Strasbourg Kléber (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Immoval', link:'https://www.immoval.com/annonces-immobilieres/strasbourg/neudorf/neudorf-3p-58-16m%c2%b2-g64490/',
-    quartier:'Neudorf', adresse:'rue de l\'Ancienne Digue', type:'T3', surface:58.16, etage:'',
-    loyerHC:'', charges:'', loyerCC:1030, dpe:'D',
-    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Réseau Oralia — garage sous-sol, dispo août' },
-  { source:'Immoval', link:'https://www.immoval.com/annonces-immobilieres/strasbourg/hautepierre-3-pieces-62-74m%c2%b2-g63608/',
-    quartier:'Hautepierre', adresse:'avenue Racine', type:'T3', surface:62.74, etage:'6ème (ascenseur)',
-    loyerHC:'', charges:'', loyerCC:945, dpe:'B',
-    agence:'Immoval', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Réseau Oralia — balcon + parking, dispo mi-juillet' },
   { source:'Orpi Residence 2000', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-sud-centre/269432625.htm',
     quartier:'Neudorf Sud Centre', adresse:'rue Zellenberg', type:'T3', surface:66.5, etage:'3ème/4 (sans ascenseur)',
     loyerHC:889, charges:55, loyerCC:944, dpe:'D',
@@ -438,10 +407,6 @@ const LISTINGS = [
 
 /* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
 const AGENCIES = [
-  { match:/foncia/i, name:'Foncia — Location & Gestion', address:'27 avenue du Rhin, 67100 Strasbourg', tel:'03 88 15 08 08', online:false,
-    hours:['Lun–Jeu : 9h–12h30 · 13h30–18h','Ven : 9h–12h30 · 13h30–17h','Sam–Dim : fermé'] },
-  { match:/immoval/i, name:'Immoval', address:'26B avenue de la Paix-Simone Veil, 67000 Strasbourg', tel:'03 88 22 88 22', online:false,
-    hours:['Lun–Ven : 9h–12h · 14h–18h','Sam : 9h–12h','Dim : fermé'] },
   { match:/lamy/i, name:'Lamy Strasbourg Kléber', address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg', tel:'03 88 39 81 39', online:false,
     hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'], note:'Enseigne Nexity — confirmer avant visite' },
   { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'03 88 39 20 39', online:false,
@@ -452,13 +417,8 @@ const AGENCIES = [
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
 // Agences supplémentaires affichées sur la carte même sans annonce associée
-// (ex. autres implantations Foncia à Strasbourg). Repères informatifs.
-const EXTRA_AGENCIES = [
-  { name:'Foncia Transaction Halles', address:'8 Place des Halles, 67000 Strasbourg', tel:'03 88 15 08 15', note:'Agence vente/transaction',
-    hours:['Lun–Ven : 9h–12h30 · 13h30–18h30','Sam : 10h–17h','Dim : fermé'] },
-  { name:'Foncia Transaction Zurich', address:'1 Place de Zurich, 67000 Strasbourg', tel:'', note:'Agence vente/transaction',
-    hours:['Lun–Ven : 9h–12h30 · 13h30–18h30','Sam : 10h–17h','Dim : fermé'] },
-];
+// (repères informatifs). Vide pour l'instant.
+const EXTRA_AGENCIES = [];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
   for(const a of AGENCIES){ if(a.match.test(hay)) return a; }
@@ -567,7 +527,7 @@ async function renderAgencyMap(groups){
     `;
     L.marker(coords, { icon:AGENCY_ICON }).addTo(AGENCY_MARKERS).bindPopup(popup);
   }
-  // Agences supplémentaires (autres implantations Foncia, etc.) — repères informatifs
+  // Agences supplémentaires (EXTRA_AGENCIES) — repères informatifs sans annonce associée
   for(const a of EXTRA_AGENCIES){
     const coords = await geocode(a.address);
     if(!coords) continue;
