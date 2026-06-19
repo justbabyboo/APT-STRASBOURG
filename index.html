@@ -416,9 +416,11 @@ const AGENCIES = [
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
-// Agences supplémentaires affichées sur la carte même sans annonce associée
-// (repères informatifs). Vide pour l'instant.
-const EXTRA_AGENCIES = [];
+// Agences affichées même sans annonce associée (carte + fiche).
+const EXTRA_AGENCIES = [
+  { name:'Adéquation Immobilier', address:'20 Quai des Pêcheurs, 67000 Strasbourg', tel:'03 88 51 69 16', note:'✅ Garant accepté — pas de GLI',
+    hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
+];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
   for(const a of AGENCIES){ if(a.match.test(hay)) return a; }
@@ -437,11 +439,11 @@ function renderAgencies(items){
     groups.get(a.name).offers.push(it);
   }
   const countEl = document.getElementById('agencyCount');
-  if(countEl) countEl.textContent = groups.size;
-  if(!groups.size){ cont.innerHTML = '<div class="empty">Aucune agence pour l’instant.</div>'; return; }
+  if(countEl) countEl.textContent = groups.size + EXTRA_AGENCIES.length;
   const rank = g => g.info.online?2:(g.info._fallback?1:0);
   const arr = [...groups.values()].sort((x,y)=> rank(x)-rank(y) || y.offers.length-x.offers.length);
   renderAgencyMap(arr);
+  if(!groups.size && !EXTRA_AGENCIES.length){ cont.innerHTML = '<div class="empty">Aucune agence pour l’instant.</div>'; return; }
   cont.innerHTML = '';
   for(const g of arr){
     const a = g.info;
@@ -473,6 +475,22 @@ function renderAgencies(items){
       <h3>${esc(a.name)}</h3>
       ${addrHtml}
       <ul class="offers">${offersHtml}</ul>
+    `;
+    cont.appendChild(div);
+  }
+  // Agences sans annonce associée (EXTRA_AGENCIES) — fiches informatives
+  for(const a of EXTRA_AGENCIES){
+    const mapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.address + ', France');
+    const div = document.createElement('div');
+    div.className = 'agency';
+    div.innerHTML = `
+      <div class="tag">🏢 Agence</div>
+      <h3>${esc(a.name)}</h3>
+      <div class="addr">📍 ${esc(a.address)}</div>
+      ${a.tel ? `<div class="addr">☎ ${esc(a.tel)}</div>` : ''}
+      ${a.hours && a.hours.length ? `<div class="addr">🕓 ${a.hours.map(esc).join('<br>')}</div>` : ''}
+      ${a.note ? `<div class="addr">${esc(a.note)}</div>` : ''}
+      <div class="addr"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire Google Maps ↗</a></div>
     `;
     cont.appendChild(div);
   }
