@@ -407,6 +407,8 @@ const EXCLUDE_FROM_AGENCIES = /leboncoin|bon\s*coin/i;
 const EXTRA_AGENCIES = [
   { name:'Adéquation Immobilier', address:'20 Quai des Pêcheurs, 67000 Strasbourg', tel:'03 88 51 69 16', note:'✅ Garant accepté — pas de GLI',
     hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
+  { name:'Nessimmo', address:'5 avenue des Vosges, 67000 Strasbourg', tel:'03 69 57 99 54', note:'✅ Garant (copain étudiant) ou Garantme accepté — sans GLI',
+    hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
 ];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
