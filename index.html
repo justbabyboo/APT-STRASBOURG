@@ -379,21 +379,10 @@ function quartierCoords(q){
    DOSSIER_ENVOYE · ACCEPTE · REFUSE · LOUE
 */
 const LISTINGS = [
-  { source:'ASI67', link:'', quartier:'Krutenau', adresse:'Krutenau, Strasbourg',
-    type:'T3 rénové', surface:69, etage:'', loyerHC:'', charges:'', loyerCC:977, dpe:'',
-    agence:'ASI67', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
   { source:'LeBonCoin (particulier)', link:'https://www.leboncoin.fr/ad/locations/3188986832',
     quartier:'Centre', adresse:'Avenue des Vosges', type:'T3', surface:47, etage:'5/? (avec ascenseur)',
     loyerHC:835, charges:110, loyerCC:835, dpe:'',
     agence:'', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'123 Loger', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/272275997.htm',
-    quartier:'Esplanade / Facultés', adresse:'Boulevard d\'Anvers', type:'T3', surface:50, etage:'5ème (dernier, sans ascenseur)',
-    loyerHC:820, charges:155, loyerCC:975, dpe:'E',
-    agence:'123 Loger', contact:'', tel:'', statut:'A_CONTACTER', visite:'', notes:'Rénové 2024' },
-  { source:'LocService', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-est-centre/269509925.htm',
-    quartier:'Neudorf Est Centre', adresse:'', type:'T3', surface:68, etage:'',
-    loyerHC:700, charges:130, loyerCC:830, dpe:'B',
-    agence:'LocService', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
   { source:'Lamy', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/270228523.htm',
     quartier:'Neudorf Ouest Centre', adresse:'rue Saint-Erhard', type:'T3', surface:68.15, etage:'2ème/2 (dernier, ascenseur)',
     loyerHC:735.75, charges:160, loyerCC:895.75, dpe:'D',
@@ -409,13 +398,11 @@ const LISTINGS = [
 const AGENCIES = [
   { match:/lamy/i, name:'Lamy Strasbourg Kléber', address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg', tel:'03 88 39 81 39', online:false,
     hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'], note:'Enseigne Nexity — confirmer avant visite' },
-  { match:/asi\s*67|strasbourg immobili/i, name:'ASI — Agence Strasbourg Immobilière', address:'200 avenue de Colmar (Meinau), 67100 Strasbourg', tel:'03 88 39 20 39', online:false,
-    hours:['Lun–Jeu : 8h30–12h · 14h–18h','Ven : 8h30–12h · 14h–17h','Sam–Dim : fermé'], note:'Succursale : 77 rue Boecklin (Robertsau)' },
   { match:/orpi|r[ée]sidence\s*2000/i, name:'Orpi — Neudorf L\'Immobilier', address:'116 Route du Polygone, 67100 Strasbourg', tel:'03 88 34 41 41', online:false,
     hours:['Lun, Mar, Jeu, Ven : 9h–12h · 14h–17h','Mer : 9h–12h','Sam : sur RDV · Dim : fermé'] },
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
-const EXCLUDE_FROM_AGENCIES = /123\s*loger|locservice|leboncoin|bon\s*coin/i;
+const EXCLUDE_FROM_AGENCIES = /leboncoin|bon\s*coin/i;
 // Agences affichées même sans annonce associée (carte + fiche).
 const EXTRA_AGENCIES = [
   { name:'Adéquation Immobilier', address:'20 Quai des Pêcheurs, 67000 Strasbourg', tel:'03 88 51 69 16', note:'✅ Garant accepté — pas de GLI',
