@@ -383,10 +383,6 @@ const LISTINGS = [
     quartier:'Centre', adresse:'Avenue des Vosges', type:'T3', surface:47, etage:'5/? (avec ascenseur)',
     loyerHC:835, charges:110, loyerCC:835, dpe:'',
     agence:'', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Lamy', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-ouest-centre/270228523.htm',
-    quartier:'Neudorf Ouest Centre', adresse:'rue Saint-Erhard', type:'T3', surface:68.15, etage:'2ème/2 (dernier, ascenseur)',
-    loyerHC:735.75, charges:160, loyerCC:895.75, dpe:'D',
-    agence:'Lamy Strasbourg Kléber (via SeLoger)', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
   { source:'Orpi Residence 2000', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-sud-centre/269432625.htm',
     quartier:'Neudorf Sud Centre', adresse:'rue Zellenberg', type:'T3', surface:66.5, etage:'3ème/4 (sans ascenseur)',
     loyerHC:889, charges:55, loyerCC:944, dpe:'D',
@@ -396,19 +392,19 @@ const LISTINGS = [
 
 /* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
 const AGENCIES = [
-  { match:/lamy/i, name:'Lamy Strasbourg', address:'3 Place de Haguenau (3e étage), 67000 Strasbourg', tel:'03 88 39 81 39', online:false,
-    hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'], note:'Enseigne Nexity — confirmer avant visite' },
-  { match:/orpi|r[ée]sidence\s*2000/i, name:'Orpi — Neudorf L\'Immobilier', address:'116 Route du Polygone, 67100 Strasbourg', tel:'03 88 34 41 41', online:false,
+  { match:/orpi|r[ée]sidence\s*2000/i, name:'Orpi — Neudorf L\'Immobilier', address:'116 Route du Polygone, 67100 Strasbourg', tel:'03 88 34 41 41', online:false, site:'https://www.orpi.com/neudorflimmobilier/',
     hours:['Lun, Mar, Jeu, Ven : 9h–12h · 14h–17h','Mer : 9h–12h','Sam : sur RDV · Dim : fermé'] },
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /leboncoin|bon\s*coin/i;
 // Agences affichées même sans annonce associée (carte + fiche).
 const EXTRA_AGENCIES = [
-  { name:'Adéquation Immobilier', address:'20 Quai des Pêcheurs, 67000 Strasbourg', tel:'03 88 51 69 16', note:'✅ Garant accepté — pas de GLI',
+  { name:'Adéquation Immobilier', address:'20 Quai des Pêcheurs, 67000 Strasbourg', tel:'03 88 51 69 16', site:'https://adequationimmobilier.com/', note:'✅ Garant accepté — pas de GLI',
     hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
-  { name:'Nessimmo', address:'5 avenue des Vosges, 67000 Strasbourg', tel:'03 69 57 99 54', note:'✅ Garant (copain étudiant) ou Garantme accepté — sans GLI',
+  { name:'Nessimmo', address:'5 avenue des Vosges, 67000 Strasbourg', tel:'03 69 57 99 54', site:'https://www.nessimmo67.fr/', note:'✅ Garant (copain étudiant) ou Garantme accepté — sans GLI',
     hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
+  { name:'Lamy Strasbourg', address:'3 Place de Haguenau (3e étage), 67000 Strasbourg', tel:'03 88 39 81 39', site:'https://www.lamy-immobilier.fr/', note:'Enseigne Nexity — confirmer avant visite',
+    hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'] },
 ];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
@@ -445,6 +441,7 @@ function renderAgencies(items){
                + (a.tel ? `<div class="addr">☎ ${esc(a.tel)}</div>` : '')
                + (a.hours && a.hours.length ? `<div class="addr">🕓 ${a.hours.map(esc).join('<br>')}</div>` : '')
                + (a.note ? `<div class="addr">${esc(a.note)}</div>` : '')
+               + (a.site ? `<div class="addr">🌐 <a href="${esc(a.site)}" target="_blank" rel="noopener">Site web ↗</a></div>` : '')
                + `<div class="addr"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire Google Maps ↗</a></div>`;
     } else {
       addrHtml = `<div class="addr">📍 ${esc(a.note||'Adresse à compléter')}</div>`;
@@ -479,6 +476,7 @@ function renderAgencies(items){
       ${a.tel ? `<div class="addr">☎ ${esc(a.tel)}</div>` : ''}
       ${a.hours && a.hours.length ? `<div class="addr">🕓 ${a.hours.map(esc).join('<br>')}</div>` : ''}
       ${a.note ? `<div class="addr">${esc(a.note)}</div>` : ''}
+      ${a.site ? `<div class="addr">🌐 <a href="${esc(a.site)}" target="_blank" rel="noopener">Site web ↗</a></div>` : ''}
       <div class="addr"><a href="${mapUrl}" target="_blank" rel="noopener">Itinéraire Google Maps ↗</a></div>
     `;
     cont.appendChild(div);
