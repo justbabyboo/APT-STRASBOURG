@@ -379,32 +379,62 @@ function quartierCoords(q){
    DOSSIER_ENVOYE · ACCEPTE · REFUSE · LOUE
 */
 const LISTINGS = [
-  { source:'LeBonCoin (particulier)', link:'https://www.leboncoin.fr/ad/locations/3188986832',
-    quartier:'Centre', adresse:'Avenue des Vosges', type:'T3', surface:47, etage:'5/? (avec ascenseur)',
-    loyerHC:835, charges:110, loyerCC:835, dpe:'',
-    agence:'', contact:'', tel:'', statut:'A_CONTACTER', visite:'' },
-  { source:'Orpi Residence 2000', link:'https://www.seloger.com/annonces/locations/appartement/strasbourg-67/neudorf-sud-centre/269432625.htm',
-    quartier:'Neudorf Sud Centre', adresse:'rue Zellenberg', type:'T3', surface:66.5, etage:'3ème/4 (sans ascenseur)',
-    loyerHC:889, charges:55, loyerCC:944, dpe:'D',
-    agence:'Orpi — Résidence 2000 (Illkirch)', contact:'', tel:'03 88 67 39 85', statut:'A_CONTACTER', visite:'',
-    notes:'Rénové à neuf en 2024 · proche tram · cave · entrée séparée · chauffage élec. individuel · dépôt 889 €' },
+  { source:'ASI67 — Agence Strasbourg Immobilière', link:'',
+    quartier:'Neudorf', adresse:'34 rue Baldner', type:'T5', surface:84.42, etage:'RDC surélevé (avec ascenseur)',
+    loyerHC:835, charges:180, loyerCC:1015, dpe:'D',
+    agence:'ASI67 — Meinau', contact:'Céline Fourcassies', tel:'06 33 12 38 56', statut:'VISITE_PROGRAMMEE', visite:'2026-08-28',
+    notes:'Réf. CF434-BALDNER · 12,02 €/m² · traversant · 3 chambres · garage fermé · rénové 2025 · chauffage + eau collectifs gaz inclus dans charges · énergie 1470–2000 €/an · honoraires 935 € · dépôt 835 € · coût d’entrée 2785 € · GLI Galian — avis d’imposition français exigés, point non tranché' },
+  { source:'Beausite Immobilier', link:'https://www.seloger.com/annonce/location/grand-est/bas-rhin-67/strasbourg-67000/26G1V7DVD9CQ',
+    quartier:'Gare', adresse:'Rue de Rosheim', type:'T4', surface:96, etage:'2ème/4 (monte-charges)',
+    loyerHC:910, charges:170, loyerCC:1080, dpe:'C',
+    agence:'Beausite Immobilier', contact:'Lisa Liberio', tel:'', statut:'CONTACTE', visite:'',
+    notes:'Réf. ROSIE-BEAUSITE · 11,25 €/m² · rue piétonne · immeuble début XXe · parquet d’origine · 3 chambres possibles · cuisine séparée équipée avec balcon · chauffage collectif inclus · énergie 930–1310 €/an · honoraires 983 € dont 288 € EDL · dépôt 910 € · libre 31/08 · en attente de réponse' },
+  { source:'L’Immobilière de la Marseillaise', link:'https://www.seloger.com/annonce/location/grand-est/bas-rhin-67/strasbourg-67000/26NEDF4ZMRQB',
+    quartier:'Neudorf', adresse:'Ostel Sainte-Odile', type:'T3', surface:59.69, etage:'3ème',
+    loyerHC:939, charges:70, loyerCC:1009, dpe:'C',
+    agence:'L’Immobilière de la Marseillaise', contact:'', tel:'', statut:'CONTACTE', visite:'',
+    notes:'Première occupation · 16,90 €/m² · terrasse · parking privatif · cave · cuisine ouverte · chauffage élec. individuel · honoraires 783 € dont 181 € EDL (au plafond légal) · dépôt 975 € télécommande incluse · en attente de réponse' },
 ];
 
 /* ============== Agences à visiter (annuaire + regroupement des annonces) ============== */
 const AGENCIES = [
   { match:/orpi|r[ée]sidence\s*2000/i, name:'Orpi — Neudorf L\'Immobilier', address:'116 Route du Polygone, 67100 Strasbourg', tel:'03 88 34 41 41', online:false, site:'https://www.orpi.com/neudorflimmobilier/',
     hours:['Lun, Mar, Jeu, Ven : 9h–12h · 14h–17h','Mer : 9h–12h','Sam : sur RDV · Dim : fermé'] },
+  { match:/asi\s*67|agence\s*strasbourg\s*immobili/i, name:'ASI67 — Agence Strasbourg Immobilière (Meinau)', address:'200 avenue de Colmar, 67100 Strasbourg', tel:'03 88 39 20 39', online:false, site:'https://www.asi67.com',
+    note:'⚠️ GLI Galian — exige des avis d\'imposition français. Contact : Céline Fourcassies, 06 33 12 38 56. Succursale : 77 rue Boecklin (Robertsau)',
+    hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
+  { match:/citya|s[ée]gesca/i, name:'Citya Ruhl-Ségesca', address:'20 rue de la 1ère Armée, 67000 Strasbourg', tel:'', online:false, site:'https://www.citya.com',
+    note:'Gestionnaire du bien passage Clara Malraux — vérifier la présence d\'une GLI',
+    hours:['Lun–Ven : horaires à confirmer'] },
+  { match:/beausite/i, name:'Beausite Immobilier', address:'50 avenue des Vosges, 67000 Strasbourg', tel:'', online:false, site:'https://www.beausite-immobilier.fr',
+    note:'Contact : Lisa Liberio — dossier envoyé, en attente',
+    hours:['Lun–Ven : horaires à confirmer'] },
+  { match:/marseillaise/i, name:'L\'Immobilière de la Marseillaise', address:'Strasbourg', tel:'', online:false, site:'https://immo-marseillaise.com',
+    note:'Premier contact par mail uniquement — dossier envoyé, en attente' },
+  { match:/blackstork/i, name:'BlackStork Immobilier', address:'32 Allée de la Robertsau, 67000 Strasbourg', tel:'', online:false, site:'https://www.blackstork.fr',
+    note:'Contact : Marie Schaeffer — aucune GLI mentionnée, à confirmer' },
+  { match:/immoval/i, name:'Immoval', address:'22 avenue de la Paix, 67000 Strasbourg', tel:'03 88 22 88 22', online:false, site:'https://www.immoval.com' },
+  { match:/lamy/i, name:'Lamy Strasbourg Kléber', address:'2 quai Kléber (Tour ESCA), 67000 Strasbourg', tel:'03 88 39 81 39', online:false, site:'https://www.lamy-immobilier.fr/',
+    hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'] },
+  { match:/myhome/i, name:'MyHome Schiltigheim', address:'Schiltigheim', tel:'', online:false, site:'',
+    note:'⚠️ Aucune demande par téléphone — formulaire du site uniquement' },
+  { match:/bsd/i, name:'Agence BSD', address:'Strasbourg', tel:'', online:false, site:'' },
+  { match:/foncia|emeria/i, name:'Foncia — Location & Gestion', address:'27 avenue du Rhin, 67100 Strasbourg', tel:'', online:false, site:'https://fr.foncia.com/' },
+  { match:/123\s*loger/i, name:'123 Loger', address:'', tel:'', online:true, site:'https://www.123loger.com/',
+    note:'En ligne — entre particuliers · bonjour@123loger.com' },
+  { match:/locservice/i, name:'LocService', address:'', tel:'', online:true, site:'https://www.locservice.fr/',
+    note:'En ligne — de particulier à particulier · abonnement 29 €/mois' },
 ];
 // Plateformes en ligne (pas d'agence physique à Strasbourg) : exclues de « Agences à visiter ».
 const EXCLUDE_FROM_AGENCIES = /leboncoin|bon\s*coin/i;
 // Agences affichées même sans annonce associée (carte + fiche).
 const EXTRA_AGENCIES = [
+  { name:'Hello Imm', address:'4 rue de l\'Église, 67000 Strasbourg', tel:'03 67 70 07 04', site:'https://helloimm.com/', note:'Contact : Perrine Tschirret — aucun bien correspondant au 23/08, relancer sous 2–3 semaines',
+    hours:['Lun–Jeu : 8h45–12h45 · 13h45–17h30','Ven : 8h45–12h45','Sam–Dim : fermé'] },
   { name:'Adéquation Immobilier', address:'20 Quai des Pêcheurs, 67000 Strasbourg', tel:'03 88 51 69 16', site:'https://adequationimmobilier.com/', note:'✅ Garant accepté — pas de GLI',
     hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
   { name:'Nessimmo', address:'5 avenue des Vosges, 67000 Strasbourg', tel:'03 69 57 99 54', site:'https://www.nessimmo67.fr/', note:'✅ Garant (copain étudiant) ou Garantme accepté — sans GLI',
     hours:['Lun–Ven : 9h–12h · 14h–18h','Sam–Dim : fermé'] },
-  { name:'Lamy Strasbourg', address:'3 Place de Haguenau (3e étage), 67000 Strasbourg', tel:'03 88 39 81 39', site:'https://www.lamy-immobilier.fr/', note:'Enseigne Nexity — confirmer avant visite',
-    hours:['Lun–Jeu : 9h–12h · 13h30–17h30','Ven : 9h–12h · 13h30–17h','Sam–Dim : fermé'] },
 ];
 function detectAgency(it){
   const hay = ((it.source||'')+' '+(it.agence||'')).toLowerCase();
