@@ -385,7 +385,7 @@ const LISTINGS = [
     agence:'ASI67 — Meinau', contact:'Céline Fourcassies', tel:'06 33 12 38 56', statut:'VISITE_PROGRAMMEE', visite:'2026-08-28',
     notes:'Réf. CF434-BALDNER · 12,02 €/m² · traversant · 3 chambres · garage fermé · rénové 2025 · chauffage + eau collectifs gaz inclus dans charges · énergie 1470–2000 €/an · honoraires 935 € · dépôt 835 € · coût d’entrée 2785 € · GLI Galian — avis d’imposition français exigés, point non tranché' },
   { source:'Beausite Immobilier', link:'https://www.seloger.com/annonce/location/grand-est/bas-rhin-67/strasbourg-67000/26G1V7DVD9CQ',
-    quartier:'Gare', adresse:'Rue de Rosheim', type:'T4', surface:96, etage:'2ème/4 (monte-charges)',
+    quartier:'Gare', adresse:'Rue de Rosheim', coords:[48.58017, 7.73310], type:'T4', surface:96, etage:'2ème/4 (monte-charges)',
     loyerHC:910, charges:170, loyerCC:1080, dpe:'C',
     agence:'Beausite Immobilier', contact:'Lisa Liberio', tel:'', statut:'CONTACTE', visite:'',
     notes:'Réf. ROSIE-BEAUSITE · 11,25 €/m² · rue piétonne · immeuble début XXe · parquet d’origine · 3 chambres possibles · cuisine séparée équipée avec balcon · chauffage collectif inclus · énergie 930–1310 €/an · honoraires 983 € dont 288 € EDL · dépôt 910 € · libre 31/08 · en attente de réponse' },
@@ -641,7 +641,9 @@ async function renderListings(items){
   let pts = [];
   for(const it of items){
     let coords = null;
-    if(it.adresse && !/^\s*$/.test(it.adresse)){
+    // Coordonnées explicites prioritaires (fiables, contournent un géocodage douteux)
+    if(Array.isArray(it.coords) && it.coords.length===2){ coords = it.coords; }
+    if(!coords && it.adresse && !/^\s*$/.test(it.adresse)){
       coords = await geocode(it.adresse);
     }
     if(!coords) coords = quartierCoords(it.quartier);
